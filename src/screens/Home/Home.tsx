@@ -1,5 +1,5 @@
 import songs from '@/assets/data/music.json'
-import { MusicCard } from '@/components/MusicCard'
+import { MusicCard, MusicCardProps } from '@/components/MusicCard'
 import { useSoundStore } from '@/store/music'
 import { FlashList } from '@shopify/flash-list'
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av'
@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react'
 import { StatusBar, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { AudioModal } from '../components'
+
+const HOST = 'https://music-api-jwfe.onrender.com/musics'
 
 const HomeScreen = () => {
   const {
@@ -26,6 +28,8 @@ const HomeScreen = () => {
     source,
   } = useSoundStore()
 
+  const [data, setData] = useState<MusicCardProps[]>([])
+
   useEffect(() => {
     Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
@@ -36,6 +40,13 @@ const HomeScreen = () => {
       interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
       playThroughEarpieceAndroid: false,
     })
+  }, [])
+
+  useEffect(() => {
+    fetch(HOST)
+      .then((response) => response.json())
+      .then((data) => setData(data?.data))
+      .catch((error) => console.error(error))
   }, [])
 
   useEffect(() => {
@@ -108,7 +119,7 @@ const HomeScreen = () => {
 
       <View style={styles.main}>
         <FlashList
-          data={songs}
+          data={data}
           renderItem={({ item, index }) => (
             <MusicCard
               {...item}
