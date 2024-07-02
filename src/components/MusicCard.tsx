@@ -1,5 +1,5 @@
 import { SimpleLineIcons } from '@expo/vector-icons'
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 
 export type MusicCardProps = {
   url: string
@@ -9,17 +9,20 @@ export type MusicCardProps = {
 }
 
 const MusicCard = (data: MusicCardProps & { onSelect: () => void }) => {
-  const { title, artwork, onSelect } = data
+  const { title, artwork, onSelect, artist } = data
 
   return (
     <Pressable onPress={onSelect}>
       <View style={styles.card}>
-        {/* {artwork ? (
-          <Image source={{ uri: artwork }} style={{ width: 50, height: 50 }} />
-        ) : ( */}
-        <SimpleLineIcons name="music-tone-alt" size={24} color="white" />
-        {/* )} */}
-        <Text style={styles.text}>{title}</Text>
+        {artwork ? (
+          <Image source={{ uri: artwork }} style={{ width: 40, height: 40 }} />
+        ) : (
+          <SimpleLineIcons name="music-tone-alt" size={24} color="white" />
+        )}
+        <View>
+          <Text style={styles.text}>{title}</Text>
+          <Text style={styles.text_mini}>{artist}</Text>
+        </View>
       </View>
     </Pressable>
   )
@@ -41,5 +44,9 @@ const styles = StyleSheet.create({
   },
   text: {
     color: 'white',
+  },
+  text_mini: {
+    color: 'white',
+    fontSize: 11,
   },
 })

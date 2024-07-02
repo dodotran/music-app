@@ -101,7 +101,7 @@ const AudioModal = (props: AudioModalProps) => {
         <View style={styles.container}>
           <View>
             <Image
-              source={item.artwork ? item.artwork : UnknownArtistImg}
+              source={item.artwork ? { uri: item.artwork } : UnknownArtistImg}
               style={{ width: '100%', objectFit: 'contain' }}
               height={Dimensions.get('screen').height / 2}
             />

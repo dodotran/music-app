@@ -1,11 +1,10 @@
-import songs from '@/assets/data/music.json'
 import { MusicCard, MusicCardProps } from '@/components/MusicCard'
 import { useSoundStore } from '@/store/music'
 import { FlashList } from '@shopify/flash-list'
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useEffect, useState } from 'react'
-import { RefreshControl, StatusBar, StyleSheet, Text, View } from 'react-native'
+import { RefreshControl, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { AudioModal } from '../components'
 
@@ -29,6 +28,8 @@ const HomeScreen = () => {
   } = useSoundStore()
 
   const [data, setData] = useState<MusicCardProps[]>([])
+  const [search, setSearch] = useState('')
+  const [filteredItems, setFilteredItems] = useState<MusicCardProps[]>([])
 
   useEffect(() => {
     Audio.setAudioModeAsync({
@@ -66,7 +67,7 @@ const HomeScreen = () => {
 
   function playSound(index: number, shouldPlay: boolean) {
     if (index !== null) {
-      setSource({ uri: songs[index].url, shouldPlay })
+      setSource({ uri: data[index].url, shouldPlay })
     } else {
       setSource(null)
     }
@@ -84,12 +85,13 @@ const HomeScreen = () => {
   }
 
   const prev = () => {
-    const index = selected === 0 ? songs.length - 1 : selected ? selected - 1 : 0
+    const index = selected === 0 ? filteredItems.length - 1 : selected ? selected - 1 : 0
     playSound(index, isPlay)
   }
 
   const next = () => {
-    const index = selected === songs.length - 1 ? 0 : selected ? selected + 1 : 0
+    const index = selected === filteredItems.length - 1 ? 0 : selected !== null ? selected + 1 : 0
+    console.log(index)
     playSound(index, isPlay)
   }
 
@@ -97,75 +99,102 @@ const HomeScreen = () => {
     setFinishFunc(() => next.bind(this))
   }, [])
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="light" />
+  useEffect(() => {
+    if (search === '') {
+      setFilteredItems(data)
+    } else {
+      setFilteredItems(
+        data.filter((item) => item?.artist?.toLowerCase().includes(search.toLowerCase())),
+      )
+    }
+  }, [search, data])
 
-      <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} locations={[0.1, 0.4, 0.9]}>
-        <View
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexDirection: 'row',
-            height: 40,
-            alignItems: 'center',
-          }}
-        >
-          <Text
+  return (
+    <>
+      <StatusBar barStyle="light-content" />
+
+      <SafeAreaView style={styles.container}>
+        <LinearGradient colors={['#4c669f', '#3b5998', '#192f6a']} locations={[0.1, 0.4, 0.9]}>
+          <View
             style={{
-              textAlign: 'center',
-              fontSize: 18,
-              fontWeight: '500',
-              color: 'white',
+              display: 'flex',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              height: 40,
+              alignItems: 'center',
             }}
           >
-            SONGS
-          </Text>
-        </View>
-      </LinearGradient>
-
-      <View style={styles.main}>
-        <FlashList
-          data={data}
-          renderItem={({ item, index }) => (
-            <MusicCard
-              {...item}
-              key={index}
-              onSelect={() => {
-                onSelect(index)
-                setModal(!modal)
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 18,
+                fontWeight: '500',
+                color: 'white',
               }}
+            >
+              SONGS
+            </Text>
+          </View>
+        </LinearGradient>
+
+        <View
+          style={{
+            padding: 12,
+          }}
+        >
+          <TextInput
+            style={styles.input}
+            placeholder="Search"
+            placeholderTextColor="#fff"
+            onChange={(e) => {
+              setSearch(e.nativeEvent.text)
+            }}
+          />
+        </View>
+
+        <View style={styles.main}>
+          <FlashList
+            data={filteredItems}
+            renderItem={({ item, index }) => (
+              <MusicCard
+                {...item}
+                key={index}
+                onSelect={() => {
+                  onSelect(index)
+                  setModal(!modal)
+                }}
+              />
+            )}
+            refreshControl={
+              <RefreshControl refreshing={false} onRefresh={getListMusic} tintColor="white" />
+            }
+            estimatedItemSize={100}
+          />
+
+          {selected !== null && (
+            <AudioModal
+              item={filteredItems[selected]}
+              duration={duration}
+              visible={modal}
+              close={() => {
+                setModal(!modal)
+                setSelected(null)
+                setSource(null)
+              }}
+              progress={progress}
+              position={position}
+              isPlay={isPlay}
+              pause={pause}
+              play={play}
+              prev={prev}
+              next={next}
+              playFromPosition={playFromPosition}
+              index={selected}
             />
           )}
-          refreshControl={
-            <RefreshControl refreshing={false} onRefresh={getListMusic} tintColor="white" />
-          }
-          estimatedItemSize={100}
-        />
-
-        {selected !== null && (
-          <AudioModal
-            item={songs[selected]}
-            duration={duration}
-            visible={modal}
-            close={() => {
-              setModal(!modal)
-              setSelected(null)
-              setSource(null)
-            }}
-            progress={progress}
-            position={position}
-            isPlay={isPlay}
-            pause={pause}
-            play={play}
-            prev={prev}
-            next={next}
-            playFromPosition={playFromPosition}
-            index={selected}
-          />
-        )}
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </>
   )
 }
 
@@ -179,5 +208,15 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
     padding: 12,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingLeft: 8,
+    backgroundColor: 'black',
+    color: 'white',
+    margin: 12,
   },
 })
