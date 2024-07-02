@@ -19,6 +19,18 @@ export default function TabTwoScreen() {
       playlist: playlist.split(',').map((item) => item.trim()),
     }
 
+    //check if any of the fields are empty
+    if (
+      !newMusic.url ||
+      !newMusic.title ||
+      !newMusic.artist ||
+      !newMusic.artwork ||
+      !newMusic.playlist
+    ) {
+      Alert.alert('Error', 'All fields are required')
+      return
+    }
+
     try {
       const response = await fetch(HOST, {
         method: 'POST',
@@ -48,25 +60,40 @@ export default function TabTwoScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Add Music</Text>
-      <TextInput style={styles.input} placeholder="URL" value={url} onChangeText={setUrl} />
-      <TextInput style={styles.input} placeholder="Title" value={title} onChangeText={setTitle} />
+      <TextInput
+        style={styles.input}
+        placeholder="URL"
+        value={url}
+        onChangeText={setUrl}
+        placeholderTextColor="#fff"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Title"
+        value={title}
+        onChangeText={setTitle}
+        placeholderTextColor="#fff"
+      />
       <TextInput
         style={styles.input}
         placeholder="Artist"
         value={artist}
         onChangeText={setArtist}
+        placeholderTextColor="#fff"
       />
       <TextInput
         style={styles.input}
         placeholder="Artwork URL"
         value={artwork}
         onChangeText={setArtwork}
+        placeholderTextColor="#fff"
       />
       <TextInput
         style={styles.input}
         placeholder="Playlists (comma separated)"
         value={playlist}
         onChangeText={setPlaylist}
+        placeholderTextColor="#fff"
       />
       <TouchableOpacity style={styles.button} onPress={handleAddMusic}>
         <Text style={styles.buttonText}>Add Music</Text>

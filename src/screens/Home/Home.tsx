@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list'
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useEffect, useState } from 'react'
-import { StatusBar, StyleSheet, Text, View } from 'react-native'
+import { RefreshControl, StatusBar, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { AudioModal } from '../components'
 
@@ -42,11 +42,18 @@ const HomeScreen = () => {
     })
   }, [])
 
+  const getListMusic = async () => {
+    try {
+      const response = await fetch(HOST)
+      const data = await response.json()
+      setData(data?.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   useEffect(() => {
-    fetch(HOST)
-      .then((response) => response.json())
-      .then((data) => setData(data?.data))
-      .catch((error) => console.error(error))
+    getListMusic()
   }, [])
 
   useEffect(() => {
@@ -130,6 +137,9 @@ const HomeScreen = () => {
               }}
             />
           )}
+          refreshControl={
+            <RefreshControl refreshing={false} onRefresh={getListMusic} tintColor="white" />
+          }
           estimatedItemSize={100}
         />
 
@@ -138,7 +148,11 @@ const HomeScreen = () => {
             item={songs[selected]}
             duration={duration}
             visible={modal}
-            close={() => setModal(!modal)}
+            close={() => {
+              setModal(!modal)
+              setSelected(null)
+              setSource(null)
+            }}
             progress={progress}
             position={position}
             isPlay={isPlay}

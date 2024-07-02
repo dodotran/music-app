@@ -1,5 +1,4 @@
 import { SimpleLineIcons } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native'
 
 export type MusicCardProps = {
@@ -10,13 +9,16 @@ export type MusicCardProps = {
 }
 
 const MusicCard = (data: MusicCardProps & { onSelect: () => void }) => {
-  const { title, artist, artwork, url, onSelect } = data
-  const router = useRouter()
+  const { title, artwork, onSelect } = data
 
   return (
     <Pressable onPress={onSelect}>
       <View style={styles.card}>
+        {/* {artwork ? (
+          <Image source={{ uri: artwork }} style={{ width: 50, height: 50 }} />
+        ) : ( */}
         <SimpleLineIcons name="music-tone-alt" size={24} color="white" />
+        {/* )} */}
         <Text style={styles.text}>{title}</Text>
       </View>
     </Pressable>
